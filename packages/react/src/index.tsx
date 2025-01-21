@@ -111,7 +111,6 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
       // eslint-disable-next-line no-void
       void navigationController.navigate(document.location.pathname, false);
     };
-
     window.addEventListener("popstate", navigate);
     return () => {
       window.removeEventListener("popstate", navigate);

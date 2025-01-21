@@ -4,8 +4,7 @@
   "description": "The simple way to build Django applications with modern React frontends",
   "repository": "https://github.com/django-bridge/django-bridge",
   "license": "BSD-3-Clause",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.tsx",
   "files": [
     "/dist"
   ],
