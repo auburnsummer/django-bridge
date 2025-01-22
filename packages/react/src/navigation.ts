@@ -36,6 +36,14 @@ export interface NavigationController {
   refreshProps: () => Promise<void>;
 }
 
+function absoluteURLToRelative(url: string) {
+  if (url.startsWith("/")) {
+    return url;
+  }
+  const urlObj = new URL(url);
+  return urlObj.pathname + urlObj.search + urlObj.hash
+}
+
 export function useNavigationController(
   parent: NavigationController | null,
   unpack: (data: Record<string, unknown>) => Record<string, unknown>,
@@ -74,6 +82,8 @@ export function useNavigationController(
     ) => {
       let frameId = currentFrame.id;
 
+      const relativePath = absoluteURLToRelative(path);
+
       const newFrame = view !== currentFrame.view || reload;
       if (newFrame) {
         nextFrameId += 1;
@@ -88,7 +98,7 @@ export function useNavigationController(
           const scrollPosition = window.scrollY;
           const historyState = window.history?.state as HistoryState;
           // if we're going back to previous path, return to the the previous scroll position
-          if (historyState?.prevPath === path) {
+          if (historyState?.prevPath === relativePath) {
             scollPositionY = historyState.prevScrollPosition ?? 0;
           }
 
@@ -99,7 +109,7 @@ export function useNavigationController(
               prevScrollPosition: scrollPosition,
             },
             "",
-            path
+            relativePath
           );
 
           // set the scroll position
@@ -109,7 +119,7 @@ export function useNavigationController(
 
       const nextFrame = {
         id: frameId,
-        path,
+        path: relativePath,
         title,
         view,
         props,
@@ -271,8 +281,9 @@ export function useNavigationController(
   );
 
   const submitForm = useCallback(
-    (url: string, data: FormData): Promise<void> =>
-      fetch(() => djangoPost(url, data, !!parent), url, true),
+    (url: string, data: FormData): Promise<void> => {
+      return fetch(() => djangoPost(url, data, !!parent), url, true);
+    },
     [fetch, parent]
   );
 
