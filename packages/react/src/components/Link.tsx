@@ -6,7 +6,7 @@ export interface LinkProps extends React.HTMLProps<HTMLAnchorElement> {
 }
 
 export function buildLinkElement(
-  { children, href, skipDirtyFormCheck = false, ...props }: LinkProps,
+  { children, href, skipDirtyFormCheck = false, onClick: _onClick, ...props }: LinkProps,
   { navigate }: Navigation,
   ref:
     | ((instance: HTMLAnchorElement | null) => void)
@@ -14,6 +14,10 @@ export function buildLinkElement(
     | null
 ): ReactElement {
   const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // call the passed in onClick if we were given one
+    if (_onClick) {
+      _onClick(e);
+    }
     if (href) {
       e.preventDefault();
       // eslint-disable-next-line no-void
