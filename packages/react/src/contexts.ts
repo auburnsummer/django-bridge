@@ -39,6 +39,7 @@ export interface Navigation {
   path: string;
   props: Record<string, unknown>;
   context: Record<string, unknown>;
+  pageLoading: boolean;
   navigate: (path: string, options?: NavigateOptions) => Promise<void>;
   replacePath: (frameId: number, path: string) => void;
   submitForm: (path: string, data: FormData) => Promise<void>;
@@ -55,6 +56,7 @@ export const NavigationContext = React.createContext<Navigation>({
   path: "/",
   props: {},
   context: {},
+  pageLoading: false,
   navigate: () => {
     // eslint-disable-next-line no-console
     console.error("navigate() called from outside a Django Bridge Browser");

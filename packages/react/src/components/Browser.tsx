@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode } from "react";
+import React, { ReactElement, ReactNode, useEffect } from "react";
 import { DirtyFormContext } from "../dirtyform";
 
 import { NavigationController } from "../navigation";
@@ -24,7 +24,7 @@ function Browser({
   navigationController,
   openOverlay,
 }: BrowserProps): ReactElement {
-  const { currentFrame, navigate, replacePath, submitForm, refreshProps } =
+  const { currentFrame, navigate, replacePath, submitForm, refreshProps, pageLoading } =
     navigationController;
 
   const { isDirty, requestUnload, cancelUnload } =
@@ -52,6 +52,7 @@ function Browser({
       submitForm,
       openOverlay,
       refreshProps,
+      pageLoading
     }),
     [
       currentFrame,
@@ -63,6 +64,7 @@ function Browser({
       cancelUnload,
       navigate,
       refreshProps,
+      pageLoading
     ]
   );
   // Get the view component

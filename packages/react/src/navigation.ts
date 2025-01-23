@@ -24,6 +24,7 @@ export interface NavigationController {
   parent: NavigationController | null;
   currentFrame: Frame;
   isLoading: boolean;
+  pageLoading: boolean;
   handleResponse: (
     response: DjangoBridgeResponse,
     path: string,
@@ -68,6 +69,8 @@ export function useNavigationController(
     props: {},
     context: {},
   });
+
+  const [pageLoading, setPageLoading] = useState(false);
 
   const pushFrame = useCallback(
     (
@@ -219,6 +222,7 @@ export function useNavigationController(
       pushState: boolean,
       neverReload = false
     ) => {
+      setPageLoading(true);
       // Get a fetch ID
       // We do this so that if responses come back in a different order to
       // when the requests were sent, the older requests don't replace newer ones
@@ -238,6 +242,7 @@ export function useNavigationController(
       if (response === null) {
         return;
       }
+      setPageLoading(false);
 
       await handleResponse(response, url, pushState, neverReload);
     },
@@ -317,6 +322,7 @@ export function useNavigationController(
     currentFrame,
     isLoading: currentFrame.view === "loading",
     handleResponse,
+    pageLoading,
     navigate,
     replacePath,
     submitForm,
