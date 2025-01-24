@@ -21,7 +21,6 @@ interface HistoryState {
 }
 
 export interface NavigationController {
-  parent: NavigationController | null;
   currentFrame: Frame;
   isLoading: boolean;
   pageLoading: boolean;
@@ -46,7 +45,6 @@ function absoluteURLToRelative(url: string) {
 }
 
 export function useNavigationController(
-  parent: NavigationController | null,
   unpack: (data: Record<string, unknown>) => Record<string, unknown>,
   initialResponse: DjangoBridgeResponse,
   initialPath: string,
@@ -56,7 +54,6 @@ export function useNavigationController(
       newFrame: boolean,
       messages: Message[]
     ) => void;
-    onOverlayClose?: (messages: Message[]) => void;
     onServerError?: (kind: "server" | "network") => void;
   } = {}
 ): NavigationController {
@@ -147,24 +144,12 @@ export function useNavigationController(
       neverReload = false
     ): Promise<void> => {
       if (response.status === "reload") {
-        if (!parent) {
-          window.location.href = path;
-        } else {
-          // reload responses require reloading the entire page, but this is an overlay
-          // Escalate this response to the page's navigation controller instead
-          return parent.handleResponse(response, path);
-        }
+        window.location.href = path;
       } else if (response.status === "redirect") {
         // HACK: Needed to do this because we can't call navigate directly from here
         setRedirectTo(response.path);
         return Promise.resolve();
       } else if (response.status === "render") {
-        // If this navigation controller is handling an overlay, make sure the response can be
-        // loaded in a overlay. Otherwise, escalate it to parent
-        if (parent && !response.overlay) {
-          return parent.handleResponse(response, path);
-        }
-
         // Unpack props and context
         const props = unpack(response.props);
         const context = unpack(response.context);
@@ -190,11 +175,6 @@ export function useNavigationController(
           pushState,
           reload
         );
-      } else if (response.status === "close-overlay") {
-        // Call overlay close callback
-        if (callbacks.onOverlayClose) {
-          callbacks.onOverlayClose(response.messages);
-        }
       } else if (response.status === "server-error") {
         if (callbacks.onServerError) {
           callbacks.onServerError("server");
@@ -264,7 +244,7 @@ export function useNavigationController(
         path = urlObj.pathname + urlObj.search;
       }
 
-      return fetch(() => djangoGet(path, !!parent), path, pushState);
+      return fetch(() => djangoGet(path), path, pushState);
     },
     [fetch, parent]
   );
@@ -287,7 +267,7 @@ export function useNavigationController(
 
   const submitForm = useCallback(
     (url: string, data: FormData): Promise<void> => {
-      return fetch(() => djangoPost(url, data, !!parent), url, true);
+      return fetch(() => djangoPost(url, data), url, true);
     },
     [fetch, parent]
   );
@@ -295,7 +275,7 @@ export function useNavigationController(
   const refreshProps = useCallback(
     (): Promise<void> =>
       fetch(
-        () => djangoGet(currentFrame.path, !!parent),
+        () => djangoGet(currentFrame.path),
         currentFrame.path,
         false,
         true
@@ -318,7 +298,6 @@ export function useNavigationController(
   }, [navigate, redirectTo]);
 
   return {
-    parent,
     currentFrame,
     isLoading: currentFrame.view === "loading",
     handleResponse,

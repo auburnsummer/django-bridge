@@ -4,7 +4,6 @@ import { DirtyFormContext } from "../dirtyform";
 import { NavigationController } from "../navigation";
 import {
   NavigateOptions,
-  OpenOverlayOptions,
   NavigationContext,
 } from "../contexts";
 import Config from "../config";
@@ -12,17 +11,11 @@ import Config from "../config";
 export interface BrowserProps {
   config: Config;
   navigationController: NavigationController;
-  openOverlay(
-    path: string,
-    render: (content: ReactNode) => ReactNode,
-    options?: OpenOverlayOptions
-  ): void;
 }
 
 function Browser({
   config,
-  navigationController,
-  openOverlay,
+  navigationController
 }: BrowserProps): ReactElement {
   const { currentFrame, navigate, replacePath, submitForm, refreshProps, pageLoading } =
     navigationController;
@@ -50,7 +43,6 @@ function Browser({
       },
       replacePath,
       submitForm,
-      openOverlay,
       refreshProps,
       pageLoading
     }),
@@ -58,7 +50,6 @@ function Browser({
       currentFrame,
       replacePath,
       submitForm,
-      openOverlay,
       isDirty,
       requestUnload,
       cancelUnload,

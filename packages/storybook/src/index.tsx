@@ -68,7 +68,6 @@ export function OverrideLinks({
       navigate,
       replacePath: () => {},
       submitForm: navigate,
-      openOverlay: navigate,
       refreshProps: () => Promise.resolve(),
     }),
     []

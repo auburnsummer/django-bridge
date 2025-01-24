@@ -25,16 +25,10 @@ interface RedirectResponse {
 
 interface RenderResponse {
   status: "render";
-  overlay: boolean;
   title: string;
   view: string;
   props: Record<string, unknown>;
   context: Record<string, unknown>;
-  messages: Message[];
-}
-
-interface CloseOverlayResponse {
-  status: "close-overlay";
   messages: Message[];
 }
 
@@ -50,20 +44,15 @@ export type DjangoBridgeResponse =
   | ReloadResponse
   | RedirectResponse
   | RenderResponse
-  | CloseOverlayResponse
   | ServerErrorResponse
   | NetworkErrorResponse;
 
 export async function djangoGet(
-  url: string,
-  overlay: boolean
+  url: string
 ): Promise<DjangoBridgeResponse> {
   let response: Response;
 
   const headers: HeadersInit = { "X-Requested-With": "DjangoBridge" };
-  if (overlay) {
-    headers["X-DjangoBridge-Overlay"] = "true";
-  }
 
   try {
     response = await fetch(url, { headers });
@@ -88,15 +77,11 @@ export async function djangoGet(
 
 export async function djangoPost(
   url: string,
-  data: FormData,
-  overlay: boolean
+  data: FormData
 ): Promise<DjangoBridgeResponse> {
   let response: Response;
 
   const headers: HeadersInit = { "X-Requested-With": "DjangoBridge" };
-  if (overlay) {
-    headers["X-DjangoBridge-Overlay"] = "true";
-  }
 
   try {
     response = await fetch(url, {

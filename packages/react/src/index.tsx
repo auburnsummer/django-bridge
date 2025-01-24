@@ -8,7 +8,6 @@ import Link, { BuildLinkElement, buildLinkElement } from "./components/Link";
 import Config from "./config";
 import Form from "./components/Form";
 import { MessagesContext } from "./contexts";
-import Overlay from "./components/Overlay";
 
 export interface AppProps {
   config: Config;
@@ -42,34 +41,12 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
     [pushMessage]
   );
 
-  // Overlay state
-  const [overlay, setOverlay] = React.useState<{
-    render(content: ReactNode): ReactNode;
-    initialResponse: DjangoBridgeResponse;
-    initialPath: string;
-  } | null>(null);
-  const [overlayCloseRequested, setOverlayCloseRequested] =
-    React.useState(false);
-  const overlayCloseListener = React.useRef<(() => void) | null>(null);
 
-  // Close overlay when we navigate the main window
-  // We can force close in this situation, since we've already checked if there are any dirty forms
   const onNavigation = (
     frame: Frame | null,
     newFrame: boolean,
     newMessages: Message[]
   ) => {
-    // Close overlay when we navigate the main window
-    // We can force close in this situation, since we've already checked if there are any dirty forms
-    // Only close overlay if a new frame is being pushed
-    // This prevents the overlay from closing when refreshProps is called
-    if (newFrame) {
-      setOverlayCloseRequested(true);
-
-      // As the main window has navigated away, we should ignore the close listener it provided
-      overlayCloseListener.current = null;
-    }
-
     // Clear messages if moving to new frame (instead of updating existing frame)
     // For example, navigate() and submitForm() will create a new frame but
     // replacePath() and refreshProps() will update the existing one.
@@ -85,7 +62,6 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
   const initialPath =
     window.location.pathname + window.location.search + window.location.hash;
   const navigationController = useNavigationController(
-    null,
     config.unpack,
     initialResponse as DjangoBridgeResponse,
     initialPath,
@@ -117,25 +93,6 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const openOverlay = async (
-    path: string,
-    renderOverlay: (content: ReactNode) => ReactNode,
-    { onClose }: { onClose?: () => void } = {}
-  ) => {
-    const initialOverlayResponse = await djangoGet(path, true);
-
-    if (onClose) {
-      overlayCloseListener.current = onClose;
-    }
-
-    setOverlayCloseRequested(false);
-    setOverlay({
-      render: renderOverlay,
-      initialResponse: initialOverlayResponse,
-      initialPath: path,
-    });
-  };
-
   const messagesContext = React.useMemo(
     () => ({ messages, pushMessage }),
     [messages, pushMessage]
@@ -144,38 +101,10 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
   return (
     <DirtyFormScope handleBrowserUnload>
       <MessagesContext.Provider value={messagesContext}>
-        {overlay && (
-          <DirtyFormScope>
-            <Overlay
-              config={config}
-              initialResponse={overlay.initialResponse}
-              initialPath={overlay.initialPath}
-              parentNavigationContoller={navigationController}
-              render={(content) => overlay.render(content)}
-              requestClose={() => setOverlayCloseRequested(true)}
-              closeRequested={overlayCloseRequested}
-              onCloseCompleted={() => {
-                setOverlay(null);
-                setOverlayCloseRequested(false);
-
-                // Call overlay close listener
-                if (overlayCloseListener.current) {
-                  overlayCloseListener.current();
-                  overlayCloseListener.current = null;
-                }
-              }}
-              onServerError={onServerError}
-            />
-          </DirtyFormScope>
-        )}
         {!navigationController.isLoading && (
           <Browser
             config={config}
             navigationController={navigationController}
-            openOverlay={(url, renderOverlay, options) =>
-              // eslint-disable-next-line no-void
-              void openOverlay(url, renderOverlay, options)
-            }
           />
         )}
       </MessagesContext.Provider>
@@ -185,7 +114,6 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
 
 export {
   NavigationContext,
-  OverlayContext,
   FormWidgetChangeNotificationContext,
   FormSubmissionStatus,
   MessagesContext,
