@@ -90,31 +90,30 @@ export function useNavigationController(
         frameId = nextFrameId;
       }
 
-      if (!parent) {
-        document.title = title;
 
-        if (pushState) {
-          let scollPositionY = 0;
-          const scrollPosition = window.scrollY;
-          const historyState = window.history?.state as HistoryState;
-          // if we're going back to previous path, return to the the previous scroll position
-          if (historyState?.prevPath === relativePath) {
-            scollPositionY = historyState.prevScrollPosition ?? 0;
-          }
+      document.title = title;
 
-          // set the previous path and scroll position in the state before pushing the new url
-          window.history.pushState(
-            {
-              prevPath: window.location.pathname,
-              prevScrollPosition: scrollPosition,
-            },
-            "",
-            relativePath
-          );
-
-          // set the scroll position
-          window.scrollTo(0, scollPositionY);
+      if (pushState) {
+        let scollPositionY = 0;
+        const scrollPosition = window.scrollY;
+        const historyState = window.history?.state as HistoryState;
+        // if we're going back to previous path, return to the the previous scroll position
+        if (historyState?.prevPath === relativePath) {
+          scollPositionY = historyState.prevScrollPosition ?? 0;
         }
+
+        // set the previous path and scroll position in the state before pushing the new url
+        window.history.pushState(
+          {
+            prevPath: window.location.pathname,
+            prevScrollPosition: scrollPosition,
+          },
+          "",
+          relativePath
+        );
+
+        // set the scroll position
+        window.scrollTo(0, scollPositionY);
       }
 
       const nextFrame = {
@@ -131,7 +130,7 @@ export function useNavigationController(
         callbacks.onNavigation(nextFrame, newFrame, messages);
       }
     },
-    [callbacks, currentFrame.id, currentFrame.view, parent]
+    [callbacks, currentFrame.id, currentFrame.view]
   );
 
   const [redirectTo, setRedirectTo] = useState<null | string>(null);
@@ -189,7 +188,7 @@ export function useNavigationController(
 
       return Promise.resolve();
     },
-    [callbacks, currentFrame, parent, pushFrame, unpack]
+    [callbacks, currentFrame, pushFrame, unpack]
   );
 
   const nextFetchId = useRef(1);
@@ -246,7 +245,7 @@ export function useNavigationController(
 
       return fetch(() => djangoGet(path), path, pushState);
     },
-    [fetch, parent]
+    [fetch]
   );
 
   const replacePath = useCallback(
@@ -256,20 +255,18 @@ export function useNavigationController(
         // Change the path using replaceState
         currentFrame.path = path;
 
-        if (!parent) {
-          // eslint-disable-next-line no-restricted-globals
-          history.replaceState({}, "", currentFrame.path);
-        }
+        // eslint-disable-next-line no-restricted-globals
+        history.replaceState({}, "", currentFrame.path);
       }
     },
-    [currentFrame, parent]
+    [currentFrame]
   );
 
   const submitForm = useCallback(
     (url: string, data: FormData): Promise<void> => {
       return fetch(() => djangoPost(url, data), url, true);
     },
-    [fetch, parent]
+    [fetch]
   );
 
   const refreshProps = useCallback(
@@ -280,7 +277,7 @@ export function useNavigationController(
         false,
         true
       ),
-    [currentFrame.path, fetch, parent]
+    [currentFrame.path, fetch]
   );
 
   useEffect(() => {

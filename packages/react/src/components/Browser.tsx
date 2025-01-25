@@ -47,8 +47,6 @@ function Browser({
   const { isDirty, requestUnload, cancelUnload } =
     React.useContext(DirtyFormContext);
 
-  const [outletElement, setOutletElement] = useState<React.ReactNode>(undefined);
-
   const NavigationUtils = React.useMemo(
     () => ({
       frameId: currentFrame.id,
@@ -99,13 +97,14 @@ function Browser({
 
   // eslint-disable-next-line react/jsx-no-useless-fragment
   return (
-    <UltraProvider contextProviders={config.contextProviders} currentFrame={currentFrame}>
       <NavigationContext.Provider value={NavigationUtils}>
-        <OutletContext.Provider value={view}>
-          {children}
-        </OutletContext.Provider>
+        <UltraProvider contextProviders={config.contextProviders} currentFrame={currentFrame}>
+          <OutletContext.Provider value={view}>
+            {children}
+          </OutletContext.Provider>
+        </UltraProvider>
+
       </NavigationContext.Provider>
-    </UltraProvider>
   );
 }
 
