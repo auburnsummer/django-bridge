@@ -12,9 +12,10 @@ import { MessagesContext } from "./contexts";
 export interface AppProps {
   config: Config;
   initialResponse: DjangoBridgeResponse | JSON;
+  children: ReactNode;
 }
 
-export function App({ config, initialResponse }: AppProps): ReactElement {
+export function App({ config, initialResponse, children }: AppProps): ReactElement {
   // Toast messages state
   const [messages, setMessages] = React.useState<Message[]>([]);
   const pushMessage = React.useCallback(
@@ -105,7 +106,9 @@ export function App({ config, initialResponse }: AppProps): ReactElement {
           <Browser
             config={config}
             navigationController={navigationController}
-          />
+          >
+            {children}
+          </Browser>
         )}
       </MessagesContext.Provider>
     </DirtyFormScope>
@@ -128,3 +131,4 @@ export { Link, BuildLinkElement, buildLinkElement };
 export type { Message };
 export { Config };
 export { Form };
+export { Outlet } from './components/Outlet';

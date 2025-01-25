@@ -66,3 +66,7 @@ export const MessagesContext = React.createContext<Messages>({
   messages: [],
   pushMessage: () => {},
 });
+
+
+
+export const OutletContext = React.createContext<ReactNode>(undefined);
