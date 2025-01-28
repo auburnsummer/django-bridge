@@ -16,4 +16,4 @@ The main changes are:
     ``` 
 
  - The Overlay functionality has been removed, as it wouldn't work with the Outlet concept I've got above, and I'm not
- using Overlay in my usecase for django-bridge.
+ currently using Overlay in my usecase for django-bridge.
