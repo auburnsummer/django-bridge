@@ -9,6 +9,7 @@ import {
 interface FormProps extends React.HTMLProps<HTMLFormElement> {
   isDirty?: boolean;
   disableDirtyCheck?: boolean;
+  retainExistingQueryParamsOnGet?: boolean;
 }
 
 export default function Form({
@@ -16,6 +17,7 @@ export default function Form({
   onSubmit: callerOnSubmit,
   isDirty: isInitiallyDirty = false,
   disableDirtyCheck = false,
+  retainExistingQueryParamsOnGet = false,
   ...props
 }: FormProps): ReactElement {
   const { submitForm, navigate } = React.useContext(NavigationContext);
@@ -81,10 +83,18 @@ export default function Form({
           )
           .join("&");
 
-        const path =
-          e.target.action +
-          (e.target.action.indexOf("?") === -1 ? "?" : "&") +
-          dataString;
+        let path: string;
+        
+        if (retainExistingQueryParamsOnGet) {
+          path =
+            e.target.action +
+            (e.target.action.indexOf("?") === -1 ? "?" : "&") +
+            dataString;
+        } else {
+          const url = new URL(e.target.action, window.location.origin);
+          url.search = `?${dataString}`;
+          path = url.toString();
+        }
 
         setIsSubmitting(true);
 
